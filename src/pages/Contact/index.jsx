@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -41,7 +41,7 @@ export default function Contact() {
   const [errorMessage, setErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClose = (event, reason) => {
+    const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
@@ -81,14 +81,15 @@ export default function Contact() {
           body: JSON.stringify(formData),
         }
       );
-
+     
       setIsLoading(false);
 
       if (response.ok) {
         showSuccessMessage();
-        setFormData(defaultFormData);
+        setFormData(defaultFormData);        
       } else {
         showErrorMessage();
+        
       }
     } catch (error) {
       setIsLoading(false);
@@ -101,15 +102,14 @@ export default function Contact() {
 
   const getAlert = () => {
     /** Renderizar o componente Alert correto de acordo com o valor de errorMessage */
+    
     return (
       <div>
-        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+        {errorMessage ? (<Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
           Erro ao enviar mensagem
-        </Alert>
-
-        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+        </Alert>) : (<Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
           Mensagem enviada com sucesso
-        </Alert>
+        </Alert>)}
       </div>
     );
   };
@@ -123,11 +123,13 @@ export default function Contact() {
       >
         {getAlert()}
       </Snackbar>
-      <Loading />
+      {isLoading && <Loading />}
       <Grid container rowGap={2}>
         <Grid item xs={12}>
           <TextField
+            name="name"
             value={formData.name}
+            onChange={handleChange}
             label="Nome"
             variant="standard"
             sx={inputStyle}
@@ -135,7 +137,9 @@ export default function Contact() {
         </Grid>
         <Grid item xs={12}>
           <TextField
+            name="email"
             value={formData.email}
+            onChange={handleChange}
             label="E-mail"
             variant="standard"
             sx={inputStyle}
@@ -143,7 +147,9 @@ export default function Contact() {
         </Grid>
         <Grid item xs={12}>
           <TextField
+            name="message"
             value={formData.message}
+            onChange={handleChange}
             label="Mensagem"
             variant="standard"
             multiline
@@ -160,7 +166,7 @@ export default function Contact() {
           />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="outlined">Enviar</Button>
+          <Button variant="outlined" disabled={isLoading || !isFormValid()} onClick={sendData} >Enviar</Button>
         </Grid>
       </Grid>
     </>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Grid, Typography } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
@@ -28,6 +28,8 @@ const linkStyle = {
 export default function Post() {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
+  const [post, setPost] = useState(null)
+  const [postCreator, setPostCreator] = useState(null)
 
   const getPost = async () => {
     try {
@@ -35,20 +37,31 @@ export default function Post() {
         `https://api.slingacademy.com/v1/sample-data/blog-posts/${id}`
       );
       const data = await response.json();
+      setPost(data.blog)
+
 
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    getPost()
+  }, [id])
+
+  useEffect(() => {
+    getPostCreator()
+  }, [post])
 
   const getPostCreator = async () => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `https://api.slingacademy.com/v1/sample-data/users/[user_id]`
+        `https://api.slingacademy.com/v1/sample-data/users/${post.user_id}`
       );
       const data = await response.json();
+      setPostCreator(data.user)
 
       setIsLoading(false);
     } catch (error) {
@@ -56,7 +69,7 @@ export default function Post() {
     }
   };
 
-  const getCredids = (post, postCreator) =>
+  const getCredits = (post, postCreator) =>
     `${postCreator.first_name} ${postCreator.last_name}, ${formatPostDate(
       post.created_at
     )}`;
@@ -70,18 +83,18 @@ export default function Post() {
           <Typography>Voltar</Typography>
         </Link>
       </Grid>
-      <Loading />
-      <Grid item>
+      {isLoading && <Loading />}
+      {post && postCreator && <Grid item>
         <Typography variant="h3" mb={4}>
-          {/** title */}
+          {post.title}
         </Typography>
-        <img width="100%" src={"" /** photo_url */} alt="" />
-        <PostContent content={"" /** content_html */} />
+        <img width="100%" src={post.photo_url} alt="" />
+        <PostContent content={post.content_html} />
         <Typography>
           <strong>Criado por: </strong>
-          {/** utilizar o método getCredids */}
+          {getCredits(post, postCreator)}
         </Typography>
-      </Grid>
+      </Grid>}
     </Grid>
   );
 }

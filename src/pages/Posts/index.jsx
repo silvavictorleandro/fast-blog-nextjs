@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Grid, Typography } from "@mui/material";
 
@@ -25,6 +25,7 @@ const linkStyle = {
 
 export default function Posts() {
   const [isLoading, setIsLoading] = useState(true);
+  const [posts, setPosts] = useState([])
 
   const getPosts = async () => {
     try {
@@ -32,12 +33,18 @@ export default function Posts() {
         "https://api.slingacademy.com/v1/sample-data/blog-posts"
       );
       const data = await response.json();
+      setPosts(data.blogs)
+      
 
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    getPosts()
+  }, [])
 
   const getViewPostRoute = (post) => `/${post.id}/${encodeURI(post.title)}`;
 
@@ -48,21 +55,25 @@ export default function Posts() {
       <Grid item>
         <Typography variant="h4">Publicações</Typography>
       </Grid>
-      <Loading />
+      {isLoading && <Loading />}
+      
       {/* início item post */}
-      <Grid item>
+      {posts.map((post) => 
+        (<Grid key={post.id} item>
         <Link
           to={
-            "" /** utilizar o método getViewPostRoute para aplicar a rota de visualização do post aqui */
+            getViewPostRoute(post)
           }
           style={linkStyle}
         >
-          <Typography align="left"> {/** title */}</Typography>
+          <Typography align="left"> {post.title}</Typography>
         </Link>
         <Typography align="left" variant="caption">
-          {/** utilizar o método formatPostDate para renderizar a data aqui */}
+          {formatPostDate(post.created_at)}
         </Typography>
-      </Grid>
+      </Grid>)
+      )}
+      
       {/* fim item post */}
     </Grid>
   );
